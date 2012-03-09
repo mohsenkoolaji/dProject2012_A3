@@ -1,0 +1,93 @@
+<html>
+<head>
+    <script language="JavaScript" type="text/javascript">
+        function send(form){
+
+            var letters = []; //keeps content of textfield, include numbers and operators
+            var operators=[]; //keeps operators in order in the array
+            var operatoeIndex=0;
+            var indexI=0;
+            var indexJ=0;
+            var op;//operator sent to server
+            var numbers =[]; //keeps numbers
+            var savedNumbers=[];//save numbers
+            var processedIndex=0;
+            var arg1=form.arg1.value;
+
+            //parsing agr1 textfield into arry
+            for (var i = 1; i <=arg1.length; i++)
+            {
+                letters[i-1] = arg1.substring((i - 1), i);
+            }
+
+            //separating numbers form operators
+            while(processedIndex<letters.length){
+
+                if(letters[processedIndex]== '-' ||  letters[processedIndex]=='/'){
+                    operators[operatoeIndex]=letters[processedIndex];
+                    operatoeIndex++;
+                    savedNumbers[indexI]="";
+
+                    for(var j=0;j<numbers.length;j++){
+                        savedNumbers[indexI]=savedNumbers[indexI]+numbers[j];
+                    }
+                    indexI++;
+                    for(var j=0;j<numbers.length;j++){
+                        numbers[j]="";
+                    }
+
+                    indexJ=0;
+                }else{
+                    numbers[indexJ]=letters[processedIndex];
+                    indexJ++;
+                }
+                processedIndex++;
+
+            }
+
+            savedNumbers[indexI]="";
+            //forming numbers between operators
+            for(var j=0;j<numbers.length;j++){
+                savedNumbers[indexI]=savedNumbers[indexI]+numbers[j];
+
+            // Create our XMLHttpRequest object
+            var hr = new XMLHttpRequest();
+            // Create some variables we need to send to our PHP file
+            var url = "server.php";
+
+            //sending each operator as an atomic operation
+            for(var k=-1;k<operators.length;k++){
+                if(k == -1) op="+"; else op=operators[k];
+                var vars ="op="+op+"&arg2="+savedNumbers[k+1];
+                hr.open("POST", url, true);
+                // Set content type header information for sending url encoded variables in the request
+                hr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                // Access the onreadystatechange event for the XMLHttpRequest object
+                hr.onreadystatechange = function() {
+                    if(hr.readyState == 4 && hr.status == 200) {
+                        var return_data = hr.responseText;
+                        document.getElementById("test").innerHTML=return_data;
+                    }
+                }
+                // Send the data to PHP now... and wait for response to update the status div
+                hr.send(vars); // Actually execute the request
+            }
+        }
+      }
+    </script>
+</head>
+<body>
+
+<FORM NAME="Calculator" METHOD="GET">
+    <P>Enter a number: <INPUT TYPE=TEXT  NAME="arg1" VALUE="" SIZE=10>
+
+    <P><INPUT TYPE="button" VALUE="Submit" name="Submit" onClick="javascript:send(this.form)"></P>
+
+
+</FORM>
+<div id="test"></div>
+<div id="savedNumbers"></div>
+<div id="op"></div>
+
+</BODY>
+</HTML>
